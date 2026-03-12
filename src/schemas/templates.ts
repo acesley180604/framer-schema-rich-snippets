@@ -9,22 +9,24 @@ export interface SchemaTemplate {
     data: Record<string, unknown>
 }
 
+const today = () => new Date().toISOString().split("T")[0]
+
 export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
-    // ── Article Templates ───────────────────────────────────────────────────
+    // ── Content: Articles ─────────────────────────────────────────────────────
     {
         id: "blog-post",
         name: "Blog Post",
-        description: "Standard blog post article schema with author and publisher info",
+        description: "Standard blog post with author and publisher info",
         category: "Content",
-        type: "Article",
+        type: "BlogPosting",
         data: {
             headline: "My Blog Post Title",
             description: "A brief summary of the blog post content.",
             image: "https://example.com/blog-image.jpg",
             authorName: "Author Name",
             authorUrl: "https://example.com/author",
-            datePublished: new Date().toISOString().split("T")[0],
-            dateModified: new Date().toISOString().split("T")[0],
+            datePublished: today(),
+            dateModified: today(),
             publisherName: "My Website",
             publisherLogo: "https://example.com/logo.png",
             articleSection: "Blog",
@@ -33,27 +35,48 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
     {
         id: "news-article",
         name: "News Article",
-        description: "News article schema for press and media content",
+        description: "News article for press and media with dateline",
         category: "Content",
-        type: "Article",
+        type: "NewsArticle",
         data: {
             headline: "Breaking News Headline",
             description: "Summary of the news article.",
             image: "https://example.com/news-image.jpg",
             authorName: "Reporter Name",
             authorUrl: "https://example.com/reporter",
-            datePublished: new Date().toISOString().split("T")[0],
+            datePublished: today(),
             publisherName: "News Organization",
             publisherLogo: "https://example.com/news-logo.png",
             articleSection: "News",
+            dateline: "NEW YORK",
+        },
+    },
+    {
+        id: "tutorial-article",
+        name: "Tutorial Article",
+        description: "In-depth tutorial article with word count",
+        category: "Content",
+        type: "Article",
+        data: {
+            headline: "Complete Guide to Getting Started",
+            description: "A comprehensive tutorial covering everything you need to know.",
+            image: "https://example.com/tutorial.jpg",
+            authorName: "Expert Author",
+            authorUrl: "https://example.com/author",
+            datePublished: today(),
+            dateModified: today(),
+            publisherName: "Tutorial Site",
+            publisherLogo: "https://example.com/logo.png",
+            articleSection: "Tutorials",
+            wordCount: "3500",
         },
     },
 
-    // ── Product Templates ───────────────────────────────────────────────────
+    // ── Commerce: Products ────────────────────────────────────────────────────
     {
-        id: "ecommerce-product",
-        name: "E-Commerce Product",
-        description: "Product listing with price, availability, and reviews",
+        id: "physical-product",
+        name: "Physical Product",
+        description: "Physical product listing with shipping and reviews",
         category: "Commerce",
         type: "Product",
         data: {
@@ -62,6 +85,7 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
             image: "https://example.com/product.jpg",
             sku: "SKU-001",
             brand: "Brand Name",
+            gtin: "0123456789012",
             price: "49.99",
             priceCurrency: "USD",
             availability: "https://schema.org/InStock",
@@ -69,6 +93,25 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
             ratingCount: "120",
             bestRating: "5",
             reviewCount: "85",
+        },
+    },
+    {
+        id: "digital-product",
+        name: "Digital Product",
+        description: "Digital download product (ebook, template, etc.)",
+        category: "Commerce",
+        type: "Product",
+        data: {
+            name: "Digital Product Name",
+            description: "Premium digital product available for instant download.",
+            image: "https://example.com/digital-product.jpg",
+            brand: "Brand Name",
+            price: "19.99",
+            priceCurrency: "USD",
+            availability: "https://schema.org/InStock",
+            ratingValue: "4.8",
+            ratingCount: "50",
+            bestRating: "5",
         },
     },
     {
@@ -91,10 +134,10 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         },
     },
 
-    // ── FAQ Templates ───────────────────────────────────────────────────────
+    // ── Content: FAQ ──────────────────────────────────────────────────────────
     {
-        id: "support-faq",
-        name: "Support FAQ",
+        id: "faq-page",
+        name: "FAQ Page",
         description: "Frequently asked questions for a support or help page",
         category: "Content",
         type: "FAQPage",
@@ -107,19 +150,22 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         },
     },
 
-    // ── Local Business Templates ────────────────────────────────────────────
+    // ── Local Business ────────────────────────────────────────────────────────
     {
         id: "restaurant",
         name: "Restaurant",
-        description: "Restaurant listing with address, hours, and price range",
+        description: "Restaurant with address, hours, cuisine, and price range",
         category: "Local",
-        type: "LocalBusiness",
+        type: "Restaurant",
         data: {
             name: "Restaurant Name",
             description: "A cozy restaurant serving authentic cuisine.",
             telephone: "+1-555-123-4567",
             url: "https://example.com",
+            servesCuisine: "Italian",
             priceRange: "$$",
+            menuUrl: "https://example.com/menu",
+            acceptsReservations: "true",
             streetAddress: "123 Main Street",
             addressLocality: "San Francisco",
             addressRegion: "CA",
@@ -134,29 +180,54 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         },
     },
     {
-        id: "local-service",
-        name: "Local Service Business",
-        description: "Service business like plumber, electrician, or salon",
+        id: "local-shop",
+        name: "Local Shop",
+        description: "Retail shop with address and hours",
         category: "Local",
         type: "LocalBusiness",
         data: {
-            name: "Service Business Name",
-            description: "Professional service provider in your area.",
+            name: "Shop Name",
+            description: "Your neighborhood store for quality products.",
             telephone: "+1-555-987-6543",
             url: "https://example.com",
-            priceRange: "$$$",
+            priceRange: "$$",
             streetAddress: "456 Oak Avenue",
             addressLocality: "Los Angeles",
             addressRegion: "CA",
             postalCode: "90001",
             addressCountry: "US",
+            openingHours: [
+                { dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "09:00", closes: "18:00" },
+            ],
+        },
+    },
+    {
+        id: "professional-service",
+        name: "Professional Service",
+        description: "Professional service business (law, accounting, consulting)",
+        category: "Local",
+        type: "LegalService",
+        data: {
+            name: "Professional Service Firm",
+            description: "Expert professional services for individuals and businesses.",
+            telephone: "+1-555-456-7890",
+            url: "https://example.com",
+            priceRange: "$$$",
+            streetAddress: "789 Business Blvd",
+            addressLocality: "Chicago",
+            addressRegion: "IL",
+            postalCode: "60601",
+            addressCountry: "US",
+            openingHours: [
+                { dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "08:00", closes: "17:00" },
+            ],
         },
     },
 
-    // ── Organization Templates ──────────────────────────────────────────────
+    // ── Business / Organization ───────────────────────────────────────────────
     {
-        id: "company",
-        name: "Company / Startup",
+        id: "company-profile",
+        name: "Company Profile",
         description: "Organization schema with logo, contact, and social profiles",
         category: "Business",
         type: "Organization",
@@ -176,20 +247,42 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
             ],
         },
     },
-
-    // ── Event Templates ─────────────────────────────────────────────────────
     {
-        id: "conference",
-        name: "Conference / Workshop",
+        id: "person-profile",
+        name: "Person Profile",
+        description: "Person schema for about pages and author profiles",
+        category: "People",
+        type: "Person",
+        data: {
+            name: "John Doe",
+            jobTitle: "Senior Software Engineer",
+            description: "Experienced developer specializing in web technologies.",
+            url: "https://johndoe.com",
+            image: "https://johndoe.com/photo.jpg",
+            email: "john@example.com",
+            worksForName: "Tech Company",
+            worksForUrl: "https://techcompany.com",
+            sameAs: [
+                "https://twitter.com/johndoe",
+                "https://linkedin.com/in/johndoe",
+                "https://github.com/johndoe",
+            ],
+        },
+    },
+
+    // ── Events ────────────────────────────────────────────────────────────────
+    {
+        id: "tech-event",
+        name: "Tech Event / Conference",
         description: "Event schema for conferences, workshops, and meetups",
         category: "Events",
         type: "Event",
         data: {
-            name: "Annual Tech Conference 2025",
+            name: "Annual Tech Conference 2026",
             description: "Join us for the biggest tech event of the year.",
             image: "https://example.com/event.jpg",
-            startDate: "2025-06-15T09:00",
-            endDate: "2025-06-17T18:00",
+            startDate: "2026-06-15T09:00",
+            endDate: "2026-06-17T18:00",
             eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
             eventStatus: "https://schema.org/EventScheduled",
             locationName: "Convention Center",
@@ -211,8 +304,8 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         data: {
             name: "Free Product Demo Webinar",
             description: "Join our live demo to see the product in action.",
-            startDate: "2025-04-10T14:00",
-            endDate: "2025-04-10T15:00",
+            startDate: "2026-04-10T14:00",
+            endDate: "2026-04-10T15:00",
             eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
             eventStatus: "https://schema.org/EventScheduled",
             locationUrl: "https://zoom.us/j/123456789",
@@ -223,11 +316,11 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         },
     },
 
-    // ── Recipe Templates ────────────────────────────────────────────────────
+    // ── Recipes ───────────────────────────────────────────────────────────────
     {
         id: "recipe-basic",
-        name: "Basic Recipe",
-        description: "Recipe with ingredients, instructions, and nutrition info",
+        name: "Recipe (Basic)",
+        description: "Simple recipe with ingredients and instructions",
         category: "Content",
         type: "Recipe",
         data: {
@@ -245,45 +338,63 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
             recipeIngredient: [
                 "2 1/4 cups all-purpose flour",
                 "1 tsp baking soda",
-                "1 tsp salt",
                 "1 cup butter, softened",
                 "3/4 cup sugar",
-                "3/4 cup brown sugar",
                 "2 large eggs",
-                "2 tsp vanilla extract",
                 "2 cups chocolate chips",
             ],
             recipeInstructions: [
-                { name: "Mix dry ingredients", text: "Combine flour, baking soda, and salt in a bowl." },
-                { name: "Cream butter and sugar", text: "Beat butter and sugars until light and fluffy." },
-                { name: "Add eggs", text: "Beat in eggs and vanilla extract." },
-                { name: "Combine", text: "Gradually mix in the dry ingredients. Fold in chocolate chips." },
-                { name: "Bake", text: "Drop rounded tablespoons onto baking sheets. Bake at 375F for 9-11 minutes." },
+                { name: "Mix dry ingredients", text: "Combine flour and baking soda in a bowl." },
+                { name: "Cream butter and sugar", text: "Beat butter and sugar until light and fluffy." },
+                { name: "Combine and bake", text: "Mix everything together, fold in chips, and bake at 375F for 9-11 minutes." },
             ],
         },
     },
-
-    // ── Video Templates ─────────────────────────────────────────────────────
     {
-        id: "youtube-video",
-        name: "YouTube Video",
-        description: "Video schema for YouTube or embedded video content",
+        id: "recipe-detailed",
+        name: "Recipe (Detailed with Nutrition)",
+        description: "Comprehensive recipe with full nutrition information",
         category: "Content",
-        type: "VideoObject",
+        type: "Recipe",
         data: {
-            name: "Video Title",
-            description: "A detailed description of the video content.",
-            thumbnailUrl: "https://example.com/thumbnail.jpg",
-            uploadDate: new Date().toISOString().split("T")[0],
-            duration: "PT10M30S",
-            embedUrl: "https://www.youtube.com/embed/VIDEO_ID",
+            name: "Grilled Salmon with Vegetables",
+            description: "Healthy grilled salmon with seasonal roasted vegetables.",
+            image: "https://example.com/salmon.jpg",
+            authorName: "Chef Name",
+            prepTime: "PT20M",
+            cookTime: "PT25M",
+            totalTime: "PT45M",
+            recipeYield: "4 servings",
+            recipeCategory: "Main Course",
+            recipeCuisine: "Mediterranean",
+            calories: "420 calories",
+            fatContent: "22 g",
+            carbohydrateContent: "15 g",
+            proteinContent: "38 g",
+            fiberContent: "4 g",
+            sodiumContent: "380 mg",
+            recipeIngredient: [
+                "4 salmon fillets (6 oz each)",
+                "2 tbsp olive oil",
+                "1 lemon, juiced",
+                "2 cups mixed vegetables",
+                "Salt and pepper to taste",
+            ],
+            recipeInstructions: [
+                { name: "Prepare salmon", text: "Season salmon with olive oil, lemon juice, salt, and pepper." },
+                { name: "Prep vegetables", text: "Toss vegetables with olive oil and seasoning." },
+                { name: "Grill", text: "Grill salmon skin-side down for 5-6 minutes per side. Grill vegetables alongside." },
+                { name: "Serve", text: "Plate salmon over vegetables and garnish with fresh herbs." },
+            ],
+            ratingValue: "4.8",
+            ratingCount: "125",
         },
     },
 
-    // ── HowTo Templates ────────────────────────────────────────────────────
+    // ── HowTo ─────────────────────────────────────────────────────────────────
     {
-        id: "tutorial",
-        name: "Tutorial / Guide",
+        id: "how-to-guide",
+        name: "How-To Guide",
         description: "Step-by-step how-to guide with tools and supplies",
         category: "Content",
         type: "HowTo",
@@ -305,11 +416,124 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         },
     },
 
-    // ── Breadcrumb Templates ────────────────────────────────────────────────
+    // ── Video ─────────────────────────────────────────────────────────────────
+    {
+        id: "video",
+        name: "Video",
+        description: "Video schema for YouTube or embedded video content",
+        category: "Media",
+        type: "VideoObject",
+        data: {
+            name: "Video Title",
+            description: "A detailed description of the video content.",
+            thumbnailUrl: "https://example.com/thumbnail.jpg",
+            uploadDate: today(),
+            duration: "PT10M30S",
+            embedUrl: "https://www.youtube.com/embed/VIDEO_ID",
+        },
+    },
+
+    // ── Podcast ───────────────────────────────────────────────────────────────
+    {
+        id: "podcast-episode",
+        name: "Podcast Episode",
+        description: "Podcast episode with series info and audio URL",
+        category: "Media",
+        type: "PodcastEpisode",
+        data: {
+            name: "Episode 42: The Future of AI",
+            description: "In this episode, we discuss the latest developments in artificial intelligence.",
+            url: "https://example.com/podcast/episode-42",
+            datePublished: today(),
+            duration: "PT45M",
+            contentUrl: "https://example.com/podcast/episode-42.mp3",
+            seriesName: "Tech Talk Podcast",
+            seriesUrl: "https://example.com/podcast",
+            episodeNumber: "42",
+            seasonNumber: "2",
+        },
+    },
+
+    // ── Education ─────────────────────────────────────────────────────────────
+    {
+        id: "online-course",
+        name: "Online Course",
+        description: "Online course with provider and pricing",
+        category: "Education",
+        type: "Course",
+        data: {
+            name: "Complete Web Development Bootcamp",
+            description: "Learn web development from scratch with hands-on projects.",
+            providerName: "Learning Platform",
+            providerUrl: "https://example.com",
+            url: "https://example.com/courses/web-dev",
+            image: "https://example.com/course.jpg",
+            instructorName: "Jane Smith",
+            courseLanguage: "English",
+            courseMode: "online",
+            price: "49.99",
+            priceCurrency: "USD",
+            ratingValue: "4.7",
+            ratingCount: "3200",
+        },
+    },
+
+    // ── Jobs ──────────────────────────────────────────────────────────────────
+    {
+        id: "job-posting-remote",
+        name: "Job Posting (Remote)",
+        description: "Remote job listing with salary information",
+        category: "Jobs",
+        type: "JobPosting",
+        data: {
+            title: "Senior Software Engineer",
+            description: "We're looking for an experienced software engineer to join our remote-first team.",
+            datePosted: today(),
+            validThrough: "2026-06-30",
+            hiringOrganizationName: "Tech Company",
+            hiringOrganizationUrl: "https://techcompany.com",
+            employmentType: "FULL_TIME",
+            remote: "true",
+            addressCountry: "US",
+            salaryValue: "150000",
+            salaryMinValue: "130000",
+            salaryMaxValue: "170000",
+            salaryCurrency: "USD",
+            salaryUnit: "YEAR",
+            skills: ["TypeScript", "React", "Node.js", "PostgreSQL"],
+        },
+    },
+    {
+        id: "job-posting-onsite",
+        name: "Job Posting (On-site)",
+        description: "On-site job listing with location details",
+        category: "Jobs",
+        type: "JobPosting",
+        data: {
+            title: "Marketing Manager",
+            description: "Seeking a creative marketing manager to lead our campaigns.",
+            datePosted: today(),
+            validThrough: "2026-05-31",
+            hiringOrganizationName: "Agency Name",
+            hiringOrganizationUrl: "https://agency.com",
+            employmentType: "FULL_TIME",
+            remote: "false",
+            streetAddress: "100 Market St",
+            addressLocality: "New York",
+            addressRegion: "NY",
+            postalCode: "10001",
+            addressCountry: "US",
+            salaryValue: "95000",
+            salaryCurrency: "USD",
+            salaryUnit: "YEAR",
+        },
+    },
+
+    // ── Navigation ────────────────────────────────────────────────────────────
     {
         id: "breadcrumb-ecommerce",
         name: "E-Commerce Breadcrumb",
-        description: "Product category breadcrumb trail for e-commerce sites",
+        description: "Product category breadcrumb trail",
         category: "Navigation",
         type: "BreadcrumbList",
         data: {
@@ -322,31 +546,7 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
         },
     },
 
-    // ── Person Templates ────────────────────────────────────────────────────
-    {
-        id: "personal-profile",
-        name: "Personal Profile",
-        description: "Person schema for about pages and author profiles",
-        category: "People",
-        type: "Person",
-        data: {
-            name: "John Doe",
-            jobTitle: "Senior Software Engineer",
-            description: "Experienced developer specializing in web technologies.",
-            url: "https://johndoe.com",
-            image: "https://johndoe.com/photo.jpg",
-            email: "john@example.com",
-            worksForName: "Tech Company",
-            worksForUrl: "https://techcompany.com",
-            sameAs: [
-                "https://twitter.com/johndoe",
-                "https://linkedin.com/in/johndoe",
-                "https://github.com/johndoe",
-            ],
-        },
-    },
-
-    // ── Review Templates ────────────────────────────────────────────────────
+    // ── Reviews ───────────────────────────────────────────────────────────────
     {
         id: "product-review",
         name: "Product Review",
@@ -361,7 +561,70 @@ export const SCHEMA_TEMPLATES: SchemaTemplate[] = [
             bestRating: "5",
             worstRating: "1",
             reviewBody: "This product exceeded my expectations. The quality is outstanding and it works exactly as described.",
-            datePublished: new Date().toISOString().split("T")[0],
+            datePublished: today(),
+        },
+    },
+
+    // ── Books ─────────────────────────────────────────────────────────────────
+    {
+        id: "book",
+        name: "Book",
+        description: "Book with author, ISBN, and publisher info",
+        category: "Education",
+        type: "Book",
+        data: {
+            name: "Book Title",
+            description: "A compelling story about adventure and discovery.",
+            image: "https://example.com/book-cover.jpg",
+            authorName: "Author Name",
+            isbn: "978-0-123456-78-9",
+            numberOfPages: "320",
+            bookFormat: "https://schema.org/Paperback",
+            publisher: "Publisher Name",
+            datePublished: "2025-01-15",
+            inLanguage: "en",
+            genre: "Fiction",
+            ratingValue: "4.3",
+            ratingCount: "850",
+        },
+    },
+
+    // ── Software App ──────────────────────────────────────────────────────────
+    {
+        id: "software-app",
+        name: "Software App",
+        description: "Mobile or desktop application listing",
+        category: "Commerce",
+        type: "SoftwareApplication",
+        data: {
+            name: "My App",
+            description: "A powerful app to boost your productivity.",
+            image: "https://example.com/app-icon.png",
+            operatingSystem: "iOS, Android",
+            applicationCategory: "BusinessApplication",
+            price: "0",
+            priceCurrency: "USD",
+            ratingValue: "4.6",
+            ratingCount: "1200",
+            bestRating: "5",
+            downloadUrl: "https://example.com/download",
+            softwareVersion: "2.1.0",
+        },
+    },
+
+    // ── WebSite ───────────────────────────────────────────────────────────────
+    {
+        id: "website-search",
+        name: "Website with Search",
+        description: "Website schema with sitelinks search box",
+        category: "Technical",
+        type: "WebSite",
+        data: {
+            name: "My Website",
+            url: "https://example.com",
+            description: "The official website for My Brand.",
+            searchActionTarget: "https://example.com/search?q={search_term_string}",
+            searchActionQueryInput: "search_term_string",
         },
     },
 ]

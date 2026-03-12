@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { SchemaType, SchemaEntry } from "@/schemas/types"
+import type { SchemaType, SchemaEntry, PageEntry } from "@/schemas/types"
 
 function generateId(): string {
     return Math.random().toString(36).substring(2, 10) + Date.now().toString(36)
@@ -18,6 +18,16 @@ function getDefaultData(type: SchemaType): Record<string, unknown> {
         case "Organization":
         case "Person":
             return { sameAs: [] }
+        case "ItemList":
+            return { listItems: [{ name: "", url: "" }] }
+        case "JobPosting":
+            return { skills: [] }
+        case "Movie":
+            return { actorNames: [] }
+        case "MusicAlbum":
+            return { trackNames: [] }
+        case "Dataset":
+            return { keywords: [] }
         default:
             return {}
     }
@@ -26,9 +36,12 @@ function getDefaultData(type: SchemaType): Record<string, unknown> {
 interface SchemaStore {
     schemas: SchemaEntry[]
     activeSchemaId: string | null
+    pages: PageEntry[]
+    activePageId: string | null
+    customJson: string
     toast: { message: string; type: "error" | "success" | "info" } | null
 
-    // Actions
+    // Schema actions
     addSchema: (type: SchemaType) => void
     removeSchema: (id: string) => void
     duplicateSchema: (id: string) => void
@@ -36,17 +49,35 @@ interface SchemaStore {
     updateSchemaData: (id: string, data: Record<string, unknown>) => void
     updateSchemaName: (id: string, name: string) => void
     applyTemplate: (type: SchemaType, data: Record<string, unknown>, name: string) => void
+    importCustomSchema: (type: SchemaType, data: Record<string, unknown>, name: string) => void
     clearAll: () => void
+
+    // Page actions
+    addPage: (name: string, url: string) => void
+    removePage: (id: string) => void
+    updatePage: (id: string, name: string, url: string) => void
+    selectPage: (id: string | null) => void
+    assignSchemaToPage: (schemaId: string, pageId: string) => void
+    removeSchemaFromPage: (schemaId: string, pageId: string) => void
+
+    // Custom JSON
+    setCustomJson: (json: string) => void
+
+    // Toast
     showToast: (message: string, type: "error" | "success" | "info") => void
     clearToast: () => void
 
     // Selectors
     activeSchema: () => SchemaEntry | undefined
+    schemasForPage: (pageId: string) => SchemaEntry[]
 }
 
 export const useSchemaStore = create<SchemaStore>((set, get) => ({
     schemas: [],
     activeSchemaId: null,
+    pages: [],
+    activePageId: null,
+    customJson: "",
     toast: null,
 
     addSchema: (type) => {
@@ -68,6 +99,10 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
         set((state) => ({
             schemas: state.schemas.filter((s) => s.id !== id),
             activeSchemaId: state.activeSchemaId === id ? null : state.activeSchemaId,
+            pages: state.pages.map((p) => ({
+                ...p,
+                schemaIds: p.schemaIds.filter((sid) => sid !== id),
+            })),
         }))
     },
 
@@ -123,8 +158,76 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
         }))
     },
 
+    importCustomSchema: (type, data, name) => {
+        const id = generateId()
+        const entry: SchemaEntry = {
+            id,
+            type,
+            name,
+            data: JSON.parse(JSON.stringify(data)),
+            createdAt: Date.now(),
+        }
+        set((state) => ({
+            schemas: [...state.schemas, entry],
+            activeSchemaId: id,
+        }))
+    },
+
     clearAll: () => {
-        set({ schemas: [], activeSchemaId: null })
+        set({ schemas: [], activeSchemaId: null, pages: [], activePageId: null })
+    },
+
+    // Page actions
+    addPage: (name, url) => {
+        const id = generateId()
+        const page: PageEntry = { id, name, url, schemaIds: [] }
+        set((state) => ({
+            pages: [...state.pages, page],
+            activePageId: id,
+        }))
+    },
+
+    removePage: (id) => {
+        set((state) => ({
+            pages: state.pages.filter((p) => p.id !== id),
+            activePageId: state.activePageId === id ? null : state.activePageId,
+        }))
+    },
+
+    updatePage: (id, name, url) => {
+        set((state) => ({
+            pages: state.pages.map((p) =>
+                p.id === id ? { ...p, name, url } : p
+            ),
+        }))
+    },
+
+    selectPage: (id) => {
+        set({ activePageId: id })
+    },
+
+    assignSchemaToPage: (schemaId, pageId) => {
+        set((state) => ({
+            pages: state.pages.map((p) =>
+                p.id === pageId && !p.schemaIds.includes(schemaId)
+                    ? { ...p, schemaIds: [...p.schemaIds, schemaId] }
+                    : p
+            ),
+        }))
+    },
+
+    removeSchemaFromPage: (schemaId, pageId) => {
+        set((state) => ({
+            pages: state.pages.map((p) =>
+                p.id === pageId
+                    ? { ...p, schemaIds: p.schemaIds.filter((sid) => sid !== schemaId) }
+                    : p
+            ),
+        }))
+    },
+
+    setCustomJson: (json) => {
+        set({ customJson: json })
     },
 
     showToast: (message, type) => {
@@ -138,5 +241,12 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
     activeSchema: () => {
         const state = get()
         return state.schemas.find((s) => s.id === state.activeSchemaId)
+    },
+
+    schemasForPage: (pageId) => {
+        const state = get()
+        const page = state.pages.find((p) => p.id === pageId)
+        if (!page) return []
+        return state.schemas.filter((s) => page.schemaIds.includes(s.id))
     },
 }))

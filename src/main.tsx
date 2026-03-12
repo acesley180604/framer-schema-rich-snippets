@@ -5,10 +5,10 @@ import App from "./App"
 import "framer-plugin/framer.css"
 import "./styles/globals.css"
 
-framer.showUI({
+void framer.showUI({
     position: "top right",
-    width: 360,
-    height: 520,
+    width: 380,
+    height: 560,
     resizable: true,
 })
 

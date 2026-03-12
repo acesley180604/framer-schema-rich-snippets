@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useCallback } from "react"
+import { AnimatePresence, motion } from "motion/react"
 import { useSchemaStore } from "./store/schemaStore"
 import SchemaList from "./components/SchemaList"
 import SchemaEditor from "./components/SchemaEditor"
@@ -6,16 +7,31 @@ import JsonPreview from "./components/JsonPreview"
 import Validator from "./components/Validator"
 import TemplateGallery from "./components/TemplateGallery"
 import EmbedCodePanel from "./components/EmbedCodePanel"
+import CustomSchemaBuilder from "./components/CustomSchemaBuilder"
+import SchemaGraph from "./components/SchemaGraph"
+import RichResultPreview from "./components/RichResultPreview"
 import Toast from "./components/Toast"
 
-type Tab = "schemas" | "editor" | "preview" | "validate" | "templates" | "embed"
+type Tab =
+    | "schemas"
+    | "editor"
+    | "preview"
+    | "validate"
+    | "templates"
+    | "embed"
+    | "custom"
+    | "graph"
+    | "rich-preview"
 
 const TABS: { id: Tab; label: string }[] = [
     { id: "schemas", label: "Schemas" },
     { id: "editor", label: "Editor" },
-    { id: "preview", label: "Preview" },
+    { id: "preview", label: "JSON" },
     { id: "validate", label: "Validate" },
     { id: "templates", label: "Templates" },
+    { id: "custom", label: "Custom" },
+    { id: "graph", label: "Graph" },
+    { id: "rich-preview", label: "Rich Preview" },
     { id: "embed", label: "Embed" },
 ]
 
@@ -25,18 +41,20 @@ export default function App() {
 
     const schema = activeSchema()
 
-    const handleTabChange = (tab: Tab) => {
-        // If trying to go to editor/preview/validate without an active schema, redirect to schemas
-        if ((tab === "editor" || tab === "preview" || tab === "validate") && !activeSchemaId) {
-            setActiveTab("schemas")
-            return
-        }
-        setActiveTab(tab)
-    }
+    const handleTabChange = useCallback(
+        (tab: Tab) => {
+            if ((tab === "editor" || tab === "preview" || tab === "validate" || tab === "rich-preview") && !activeSchemaId && tab !== "validate") {
+                setActiveTab("schemas")
+                return
+            }
+            setActiveTab(tab)
+        },
+        [activeSchemaId]
+    )
 
     return (
         <section>
-            <header className="row-between" style={{ padding: "12px 15px", borderBottom: "1px solid var(--framer-color-divider)" }}>
+            <header className="row-between" style={{ padding: "10px 15px", borderBottom: "1px solid var(--framer-color-divider)" }}>
                 <div className="row gap-8">
                     <h1>Schema Rich Snippets</h1>
                     {schema && (
@@ -60,16 +78,28 @@ export default function App() {
             </nav>
 
             <main>
-                {activeTab === "schemas" && <SchemaList onEditSchema={() => setActiveTab("editor")} />}
-                {activeTab === "editor" && <SchemaEditor />}
-                {activeTab === "preview" && <JsonPreview />}
-                {activeTab === "validate" && <Validator />}
-                {activeTab === "templates" && <TemplateGallery onApplied={() => setActiveTab("editor")} />}
-                {activeTab === "embed" && <EmbedCodePanel />}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                    >
+                        {activeTab === "schemas" && <SchemaList onEditSchema={() => setActiveTab("editor")} />}
+                        {activeTab === "editor" && <SchemaEditor />}
+                        {activeTab === "preview" && <JsonPreview />}
+                        {activeTab === "validate" && <Validator />}
+                        {activeTab === "templates" && <TemplateGallery onApplied={() => setActiveTab("editor")} />}
+                        {activeTab === "embed" && <EmbedCodePanel />}
+                        {activeTab === "custom" && <CustomSchemaBuilder onImported={() => setActiveTab("editor")} />}
+                        {activeTab === "graph" && <SchemaGraph />}
+                        {activeTab === "rich-preview" && <RichResultPreview />}
+                    </motion.div>
+                </AnimatePresence>
             </main>
 
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={clearToast} />}
-            <footer>Free plan: 3 schemas. Upgrade: Pro $9/mo (unlimited) | Agency $19/mo (white-label)</footer>
         </section>
     )
 }

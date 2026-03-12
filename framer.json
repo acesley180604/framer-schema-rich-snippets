@@ -1,5 +1,6 @@
 {
-  "id": "schema-rich-snippets",
+  "id": "a486be",
   "name": "Schema Rich Snippets",
-  "modes": ["canvas"]
+  "modes": ["canvas"],
+  "icon": "/icon.svg"
 }
