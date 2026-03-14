@@ -60,7 +60,7 @@ export default function SchemaEditor() {
                 showToast("No fields could be auto-filled from this URL", "info")
             }
         } catch (e) {
-            showToast("Failed to fetch URL. It may have CORS restrictions.", "error")
+            showToast("Failed to fetch URL. Most websites block cross-origin requests (CORS). Try pasting content manually instead.", "error")
         } finally {
             setFetchingUrl(false)
         }

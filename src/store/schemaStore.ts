@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { persist } from "zustand/middleware"
 import type { SchemaType, SchemaEntry, PageEntry, SchemaRule } from "@/schemas/types"
 
 function generateId(): string {
@@ -81,7 +82,7 @@ interface SchemaStore {
     schemasForRule: (ruleId: string) => SchemaEntry[]
 }
 
-export const useSchemaStore = create<SchemaStore>((set, get) => ({
+export const useSchemaStore = create<SchemaStore>()(persist((set, get) => ({
     schemas: [],
     activeSchemaId: null,
     pages: [],
@@ -112,6 +113,10 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
             pages: state.pages.map((p) => ({
                 ...p,
                 schemaIds: p.schemaIds.filter((sid) => sid !== id),
+            })),
+            rules: state.rules.map((r) => ({
+                ...r,
+                schemaIds: r.schemaIds.filter((sid) => sid !== id),
             })),
         }))
     },
@@ -303,4 +308,12 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
         if (!rule) return []
         return state.schemas.filter((s) => rule.schemaIds.includes(s.id))
     },
+}), {
+    name: "schema-rich-snippets-store",
+    partialize: (state) => ({
+        schemas: state.schemas,
+        pages: state.pages,
+        rules: state.rules,
+        customJson: state.customJson,
+    }),
 }))

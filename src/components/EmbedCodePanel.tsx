@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { useSchemaStore } from "@/store/schemaStore"
-import { generateScriptTag, generateAllJsonLdString, copyToClipboard } from "@/utils/jsonld"
+import { generateScriptTag, generateAllJsonLdString, generateJsonLdString, copyToClipboard } from "@/utils/jsonld"
 
 export default function EmbedCodePanel() {
-    const { schemas } = useSchemaStore()
+    const { schemas, rules, schemasForRule } = useSchemaStore()
     const [copied, setCopied] = useState(false)
     const [mode, setMode] = useState<"script-tag" | "json-only">("script-tag")
 
@@ -15,9 +15,23 @@ export default function EmbedCodePanel() {
         )
     }
 
-    const embedCode = mode === "script-tag"
+    // Generate rules output as data-schema-rule div elements
+    const rulesEmbed = rules
+        .filter((r) => r.enabled && r.schemaIds.length > 0)
+        .map((r) => {
+            const ruleSchemas = schemasForRule(r.id)
+            const json = generateAllJsonLdString(ruleSchemas)
+            return `<div data-schema-rule="${r.urlPattern}" style="display:none">${json}</div>`
+        })
+        .join("\n")
+
+    const baseEmbed = mode === "script-tag"
         ? generateScriptTag(schemas)
         : generateAllJsonLdString(schemas)
+
+    const embedCode = rulesEmbed
+        ? baseEmbed + "\n" + rulesEmbed
+        : baseEmbed
 
     const handleCopy = async () => {
         const ok = await copyToClipboard(embedCode)
