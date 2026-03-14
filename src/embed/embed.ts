@@ -39,6 +39,22 @@
         }
     }
 
+    // ── URL pattern matching for sitewide rules ────────────────────────────────
+
+    function matchUrlPattern(pattern: string, path: string): boolean {
+        // Convert wildcard pattern to regex
+        const regexStr = pattern
+            .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+            .replace(/\*/g, ".*")
+
+        try {
+            const regex = new RegExp("^" + regexStr + "$", "i")
+            return regex.test(path)
+        } catch {
+            return false
+        }
+    }
+
     function init(): void {
         // Method 1: Find elements with data-schema-jsonld attribute
         const elements = document.querySelectorAll("[data-schema-jsonld]")
@@ -69,6 +85,24 @@
                 injectJsonLd(jsonString)
             }
         }
+
+        // Method 4: Sitewide rules - check URL patterns and inject matching schemas
+        const ruleElements = document.querySelectorAll("[data-schema-rule]")
+        const currentPath = window.location.pathname
+        ruleElements.forEach((el) => {
+            try {
+                const ruleData = JSON.parse(el.getAttribute("data-schema-rule") || "")
+                if (ruleData.pattern && ruleData.schemas) {
+                    if (matchUrlPattern(ruleData.pattern, currentPath)) {
+                        for (const schemaJson of ruleData.schemas) {
+                            injectJsonLd(typeof schemaJson === "string" ? schemaJson : JSON.stringify(schemaJson))
+                        }
+                    }
+                }
+            } catch {
+                // Invalid rule config
+            }
+        })
     }
 
     if (document.readyState === "loading") {

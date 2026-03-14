@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { SchemaType, SchemaEntry, PageEntry } from "@/schemas/types"
+import type { SchemaType, SchemaEntry, PageEntry, SchemaRule } from "@/schemas/types"
 
 function generateId(): string {
     return Math.random().toString(36).substring(2, 10) + Date.now().toString(36)
@@ -38,6 +38,7 @@ interface SchemaStore {
     activeSchemaId: string | null
     pages: PageEntry[]
     activePageId: string | null
+    rules: SchemaRule[]
     customJson: string
     toast: { message: string; type: "error" | "success" | "info" } | null
 
@@ -60,6 +61,13 @@ interface SchemaStore {
     assignSchemaToPage: (schemaId: string, pageId: string) => void
     removeSchemaFromPage: (schemaId: string, pageId: string) => void
 
+    // Rule actions
+    addRule: (name: string, urlPattern: string) => void
+    removeRule: (id: string) => void
+    updateRule: (id: string, updates: Partial<SchemaRule>) => void
+    assignSchemaToRule: (schemaId: string, ruleId: string) => void
+    removeSchemaFromRule: (schemaId: string, ruleId: string) => void
+
     // Custom JSON
     setCustomJson: (json: string) => void
 
@@ -70,6 +78,7 @@ interface SchemaStore {
     // Selectors
     activeSchema: () => SchemaEntry | undefined
     schemasForPage: (pageId: string) => SchemaEntry[]
+    schemasForRule: (ruleId: string) => SchemaEntry[]
 }
 
 export const useSchemaStore = create<SchemaStore>((set, get) => ({
@@ -77,6 +86,7 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
     activeSchemaId: null,
     pages: [],
     activePageId: null,
+    rules: [],
     customJson: "",
     toast: null,
 
@@ -174,7 +184,7 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
     },
 
     clearAll: () => {
-        set({ schemas: [], activeSchemaId: null, pages: [], activePageId: null })
+        set({ schemas: [], activeSchemaId: null, pages: [], activePageId: null, rules: [] })
     },
 
     // Page actions
@@ -226,6 +236,43 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
         }))
     },
 
+    // Rule actions
+    addRule: (name, urlPattern) => {
+        const id = generateId()
+        const rule: SchemaRule = { id, name, urlPattern, schemaIds: [], enabled: true, createdAt: Date.now() }
+        set((state) => ({ rules: [...state.rules, rule] }))
+    },
+
+    removeRule: (id) => {
+        set((state) => ({ rules: state.rules.filter((r) => r.id !== id) }))
+    },
+
+    updateRule: (id, updates) => {
+        set((state) => ({
+            rules: state.rules.map((r) => (r.id === id ? { ...r, ...updates } : r)),
+        }))
+    },
+
+    assignSchemaToRule: (schemaId, ruleId) => {
+        set((state) => ({
+            rules: state.rules.map((r) =>
+                r.id === ruleId && !r.schemaIds.includes(schemaId)
+                    ? { ...r, schemaIds: [...r.schemaIds, schemaId] }
+                    : r
+            ),
+        }))
+    },
+
+    removeSchemaFromRule: (schemaId, ruleId) => {
+        set((state) => ({
+            rules: state.rules.map((r) =>
+                r.id === ruleId
+                    ? { ...r, schemaIds: r.schemaIds.filter((sid) => sid !== schemaId) }
+                    : r
+            ),
+        }))
+    },
+
     setCustomJson: (json) => {
         set({ customJson: json })
     },
@@ -248,5 +295,12 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
         const page = state.pages.find((p) => p.id === pageId)
         if (!page) return []
         return state.schemas.filter((s) => page.schemaIds.includes(s.id))
+    },
+
+    schemasForRule: (ruleId) => {
+        const state = get()
+        const rule = state.rules.find((r) => r.id === ruleId)
+        if (!rule) return []
+        return state.schemas.filter((s) => rule.schemaIds.includes(s.id))
     },
 }))

@@ -108,6 +108,15 @@ export interface PageEntry {
     schemaIds: string[]
 }
 
+export interface SchemaRule {
+    id: string
+    name: string
+    urlPattern: string
+    schemaIds: string[]
+    enabled: boolean
+    createdAt: number
+}
+
 export type SchemaCategory =
     | "Content"
     | "Commerce"

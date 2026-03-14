@@ -10,6 +10,7 @@ import EmbedCodePanel from "./components/EmbedCodePanel"
 import CustomSchemaBuilder from "./components/CustomSchemaBuilder"
 import SchemaGraph from "./components/SchemaGraph"
 import RichResultPreview from "./components/RichResultPreview"
+import SchemaRules from "./components/SchemaRules"
 import Toast from "./components/Toast"
 
 type Tab =
@@ -22,12 +23,14 @@ type Tab =
     | "custom"
     | "graph"
     | "rich-preview"
+    | "rules"
 
 const TABS: { id: Tab; label: string }[] = [
     { id: "schemas", label: "Schemas" },
     { id: "editor", label: "Editor" },
     { id: "preview", label: "JSON" },
     { id: "validate", label: "Validate" },
+    { id: "rules", label: "Rules" },
     { id: "templates", label: "Templates" },
     { id: "custom", label: "Custom" },
     { id: "graph", label: "Graph" },
@@ -93,6 +96,7 @@ export default function App() {
                         {activeTab === "templates" && <TemplateGallery onApplied={() => setActiveTab("editor")} />}
                         {activeTab === "embed" && <EmbedCodePanel />}
                         {activeTab === "custom" && <CustomSchemaBuilder onImported={() => setActiveTab("editor")} />}
+                        {activeTab === "rules" && <SchemaRules />}
                         {activeTab === "graph" && <SchemaGraph />}
                         {activeTab === "rich-preview" && <RichResultPreview />}
                     </motion.div>
