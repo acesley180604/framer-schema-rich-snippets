@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react"
-import { AnimatePresence, motion } from "motion/react"
+import { LicenseGate } from "@shared/index"
+import { AnimatePresence, motion } from "framer-motion"
 import { useSchemaStore } from "./store/schemaStore"
 import SchemaList from "./components/SchemaList"
 import SchemaEditor from "./components/SchemaEditor"
@@ -11,7 +12,10 @@ import CustomSchemaBuilder from "./components/CustomSchemaBuilder"
 import SchemaGraph from "./components/SchemaGraph"
 import RichResultPreview from "./components/RichResultPreview"
 import SchemaRules from "./components/SchemaRules"
+import CmsMapping from "./components/CmsMapping"
+import LlmsTxtGenerator from "./components/LlmsTxtGenerator"
 import Toast from "./components/Toast"
+import ErrorBoundary from "./components/ErrorBoundary"
 
 type Tab =
     | "schemas"
@@ -24,6 +28,8 @@ type Tab =
     | "graph"
     | "rich-preview"
     | "rules"
+    | "cms"
+    | "llms-txt"
 
 const TABS: { id: Tab; label: string }[] = [
     { id: "schemas", label: "Schemas" },
@@ -31,11 +37,13 @@ const TABS: { id: Tab; label: string }[] = [
     { id: "preview", label: "JSON" },
     { id: "validate", label: "Validate" },
     { id: "rules", label: "Rules" },
+    { id: "cms", label: "CMS" },
     { id: "templates", label: "Templates" },
     { id: "custom", label: "Custom" },
     { id: "graph", label: "Graph" },
     { id: "rich-preview", label: "Rich Preview" },
     { id: "embed", label: "Embed" },
+    { id: "llms-txt", label: "LLMs.txt" },
 ]
 
 export default function App() {
@@ -56,6 +64,8 @@ export default function App() {
     )
 
     return (
+        <LicenseGate pluginSlug="schema-rich-snippets">
+        <ErrorBoundary>
         <section>
             <header className="row-between" style={{ padding: "10px 15px", borderBottom: "1px solid var(--framer-color-divider)" }}>
                 <div className="row gap-8">
@@ -97,13 +107,17 @@ export default function App() {
                         {activeTab === "embed" && <EmbedCodePanel />}
                         {activeTab === "custom" && <CustomSchemaBuilder onImported={() => setActiveTab("editor")} />}
                         {activeTab === "rules" && <SchemaRules />}
+                        {activeTab === "cms" && <CmsMapping onGenerated={() => setActiveTab("embed")} />}
                         {activeTab === "graph" && <SchemaGraph />}
                         {activeTab === "rich-preview" && <RichResultPreview />}
+                        {activeTab === "llms-txt" && <LlmsTxtGenerator />}
                     </motion.div>
                 </AnimatePresence>
             </main>
 
             {toast && <Toast message={toast.message} type={toast.type} onDismiss={clearToast} />}
         </section>
+        </ErrorBoundary>
+        </LicenseGate>
     )
 }
